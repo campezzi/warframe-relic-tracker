@@ -3,6 +3,7 @@ module Main exposing (..)
 import Data exposing (..)
 import Html exposing (Html, div, h3, li, text, ul)
 import Html.Events exposing (onClick)
+import Http
 
 
 type alias Model =
@@ -12,13 +13,14 @@ type alias Model =
 
 
 type Msg
-    = ItemClicked Item
+    = RelicDataResponse (Result Http.Error Relic)
+    | ItemClicked Item
 
 
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( model, Cmd.none )
+        { init = ( model, (fetchRelicData RelicDataResponse) )
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -27,7 +29,7 @@ main =
 
 model : Model
 model =
-    { relics = relics
+    { relics = []
     , acquired = []
     }
 
@@ -49,6 +51,14 @@ update msg model =
                         item :: model.acquired
             in
                 ( { model | acquired = acquired_ }, Cmd.none )
+
+        RelicDataResponse result ->
+            case result of
+                Ok relic ->
+                    ( { model | relics = [ relic ] }, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
 
 
 view : Model -> Html Msg

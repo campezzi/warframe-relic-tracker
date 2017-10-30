@@ -4,8 +4,13 @@ module Data
         , Item
         , Rarity
         , Relic
+        , fetchRelicData
         , relics
         )
+
+import Http
+import Json.Decode exposing (Decoder, andThen, map, list, string)
+import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 
 
 type Era
@@ -36,6 +41,44 @@ type alias Relic =
     , u2 : Item
     , r : Item
     }
+
+
+fetchRelicData : (Result Http.Error Relic -> msg) -> Cmd msg
+fetchRelicData msg =
+    let
+        request =
+            Http.get "http://drops.warframestat.us/data/relics/Lith/A1.json" relicDecoder
+    in
+        Http.send msg request
+
+
+relicDecoder : Decoder Relic
+relicDecoder =
+    decode Relic
+        |> required "tier" (map eraDecoder string)
+        |> required "name" string
+        |> hardcoded (Item "a")
+        |> hardcoded (Item "a")
+        |> hardcoded (Item "a")
+        |> hardcoded (Item "a")
+        |> hardcoded (Item "a")
+        |> hardcoded (Item "a")
+
+
+eraDecoder : String -> Era
+eraDecoder era =
+    case era of
+        "Lith" ->
+            Lith
+
+        "Meso" ->
+            Meso
+
+        "Neo" ->
+            Neo
+
+        _ ->
+            Axi
 
 
 relics : List Relic
