@@ -60,12 +60,12 @@ relicView : Relic -> Html Msg
 relicView ({ era, name } as relic) =
     div []
         [ h3 [] [ text (toString era ++ " " ++ name) ]
-        , ul [] (dropsView relic)
+        , ul [] (dropViews relic)
         ]
 
 
-dropsView : Relic -> List (Html Msg)
-dropsView { c1, c2, c3, u1, u2, r } =
+dropViews : Relic -> List (Html Msg)
+dropViews { c1, c2, c3, u1, u2, r } =
     List.map dropView [ c1, c2, c3, u1, u2, r ]
 
 
