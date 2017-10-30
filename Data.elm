@@ -1,22 +1,11 @@
 module Data
     exposing
-        ( DropCollection
-        , Era
+        ( Era
         , Item
         , Rarity
         , Relic
         , relics
         )
-
-
-type alias DropCollection =
-    { c1 : Item
-    , c2 : Item
-    , c3 : Item
-    , u1 : Item
-    , u2 : Item
-    , r : Item
-    }
 
 
 type Era
@@ -40,7 +29,12 @@ type Rarity
 type alias Relic =
     { era : Era
     , name : String
-    , drops : DropCollection
+    , c1 : Item
+    , c2 : Item
+    , c3 : Item
+    , u1 : Item
+    , u2 : Item
+    , r : Item
     }
 
 
@@ -49,28 +43,19 @@ relics =
     [ Relic
         Lith
         "A2"
-        (mkDrops
-            "Lex Prime Barrel"
-            "Forma Blueprint"
-            "Valkyr Prime Blueprint"
-            "Cernos Prime Blueprint"
-            "Akbronco Prime Link"
-            "Akstiletto Prime Blueprint"
-        )
+        (Item "Lex Prime Barrel")
+        (Item "Forma Blueprint")
+        (Item "Valkyr Prime Blueprint")
+        (Item "Cernos Prime Blueprint")
+        (Item "Akbronco Prime Link")
+        (Item "Akstiletto Prime Blueprint")
     , Relic
         Lith
         "B2"
-        (mkDrops
-            "Paris Prime Lower Limb"
-            "Tigris Prime Stock"
-            "Forma Blueprint"
-            "Braton Prime Receiver"
-            "Orthos Prime Blade"
-            "Ballistica Prime Blueprint"
-        )
+        (Item "Paris Prime Lower Limb")
+        (Item "Tigris Prime Stock")
+        (Item "Forma Blueprint")
+        (Item "Braton Prime Receiver")
+        (Item "Orthos Prime Blade")
+        (Item "Ballistica Prime Blueprint")
     ]
-
-
-mkDrops : String -> String -> String -> String -> String -> String -> DropCollection
-mkDrops c1 c2 c3 u1 u2 r =
-    DropCollection (Item c1) (Item c2) (Item c3) (Item u1) (Item u2) (Item r)

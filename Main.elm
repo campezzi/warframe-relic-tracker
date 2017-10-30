@@ -48,7 +48,7 @@ update msg model =
                     else
                         item :: model.acquired
             in
-            ( { model | acquired = acquired_ }, Cmd.none )
+                ( { model | acquired = acquired_ }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -57,14 +57,14 @@ view { relics } =
 
 
 relicView : Relic -> Html Msg
-relicView { era, name, drops } =
+relicView ({ era, name } as relic) =
     div []
         [ h3 [] [ text (toString era ++ " " ++ name) ]
-        , ul [] (dropsView drops)
+        , ul [] (dropsView relic)
         ]
 
 
-dropsView : DropCollection -> List (Html Msg)
+dropsView : Relic -> List (Html Msg)
 dropsView { c1, c2, c3, u1, u2, r } =
     List.map dropView [ c1, c2, c3, u1, u2, r ]
 
