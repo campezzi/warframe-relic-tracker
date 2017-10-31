@@ -13,7 +13,7 @@ type alias Model =
 
 
 type Msg
-    = RelicDataResponse (Result Http.Error Relic)
+    = RelicDataResponse (Result Http.Error (List Relic))
     | ItemClicked Item
 
 
@@ -54,11 +54,15 @@ update msg model =
 
         RelicDataResponse result ->
             case result of
-                Ok relic ->
-                    ( { model | relics = [ relic ] }, Cmd.none )
+                Ok relics ->
+                    ( { model | relics = relics }, Cmd.none )
 
-                Err _ ->
-                    ( model, Cmd.none )
+                Err e ->
+                    let
+                        log =
+                            Debug.log "error" e
+                    in
+                        ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -79,6 +83,11 @@ dropViews { c1, c2, c3, u1, u2, r } =
     List.map dropView [ c1, c2, c3, u1, u2, r ]
 
 
-dropView : Item -> Html Msg
+dropView : Maybe Item -> Html Msg
 dropView item =
-    li [ onClick (ItemClicked item) ] [ text item.name ]
+    case item of
+        Nothing ->
+            li [] [ text "Item information could not be extracted, check your data" ]
+
+        Just ({ name } as i) ->
+            li [ onClick (ItemClicked i) ] [ text name ]
