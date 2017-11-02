@@ -2,12 +2,13 @@ module Data
     exposing
         ( Era
         , Item
+        , ItemCollection
         , Relic
         , fetchRelicData
         )
 
 import Http
-import Json.Decode exposing (Decoder, map, list, string, float)
+import Json.Decode exposing (Decoder, float, list, map, string)
 import Json.Decode.Pipeline exposing (decode, required)
 
 
@@ -23,6 +24,10 @@ type alias Item =
     }
 
 
+type alias ItemCollection =
+    ( Item, Item, Item, Item, Item, Item )
+
+
 type Rarity
     = Common
     | Uncommon
@@ -32,12 +37,7 @@ type Rarity
 type alias Relic =
     { era : Era
     , name : String
-    , c1 : Maybe Item
-    , c2 : Maybe Item
-    , c3 : Maybe Item
-    , u1 : Maybe Item
-    , u2 : Maybe Item
-    , r : Maybe Item
+    , items : ItemCollection
     }
 
 
@@ -53,7 +53,7 @@ fetchRelicData msg =
         request =
             Http.get "http://drops.warframestat.us/data/relics.json" relicsDecoder
     in
-        Http.send msg request
+    Http.send msg request
 
 
 relicsDecoder : Decoder (List Relic)
@@ -73,7 +73,7 @@ relicsDecoder =
                     []
                     relics
     in
-        decode onlyValid |> required "relics" (list relicDecoder)
+    decode onlyValid |> required "relics" (list relicDecoder)
 
 
 relicDecoder : Decoder (Maybe Relic)
@@ -97,60 +97,41 @@ mkRelic era name state rewards =
     case state of
         "Intact" ->
             let
-                ( c1, c2, c3, u1, u2, r ) =
-                    List.sortWith rarityComparison rewards |> List.map .item |> extract
+                items =
+                    List.sortWith rarityComparison rewards |> List.map .item |> toTuple
 
-                extract =
+                toTuple =
                     \collection ->
                         case collection of
                             [ c1, c2, c3, u1, u2, r ] ->
-                                ( Just c1
-                                , Just c2
-                                , Just c3
-                                , Just u1
-                                , Just u2
-                                , Just r
-                                )
+                                Just ( c1, c2, c3, u1, u2, r )
 
                             _ ->
-                                ( Nothing
-                                , Nothing
-                                , Nothing
-                                , Nothing
-                                , Nothing
-                                , Nothing
-                                )
+                                Nothing
             in
-                Just
-                    (Relic
-                        (mkEra era)
-                        name
-                        c1
-                        c2
-                        c3
-                        u1
-                        u2
-                        r
-                    )
+            Maybe.map3 Relic (mkEra era) (Just name) items
 
         _ ->
             Nothing
 
 
-mkEra : String -> Era
+mkEra : String -> Maybe Era
 mkEra str =
     case str of
         "Lith" ->
-            Lith
+            Just Lith
 
         "Meso" ->
-            Meso
+            Just Meso
 
         "Neo" ->
-            Neo
+            Just Neo
+
+        "Axi" ->
+            Just Axi
 
         _ ->
-            Axi
+            Nothing
 
 
 mkRarity : Float -> Rarity
@@ -174,18 +155,17 @@ rarityComparison a b =
 
         rb =
             toInt b.rarity
+
+        toInt =
+            \rarity ->
+                case rarity of
+                    Common ->
+                        1
+
+                    Uncommon ->
+                        2
+
+                    Rare ->
+                        3
     in
-        compare ra rb
-
-
-toInt : Rarity -> Int
-toInt rarity =
-    case rarity of
-        Common ->
-            1
-
-        Uncommon ->
-            2
-
-        Rare ->
-            3
+    compare ra rb

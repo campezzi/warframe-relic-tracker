@@ -20,7 +20,7 @@ type Msg
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( model, (fetchRelicData RelicDataResponse) )
+        { init = ( model, fetchRelicData RelicDataResponse )
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -50,7 +50,7 @@ update msg model =
                     else
                         item :: model.acquired
             in
-                ( { model | acquired = acquired_ }, Cmd.none )
+            ( { model | acquired = acquired_ }, Cmd.none )
 
         RelicDataResponse result ->
             case result of
@@ -62,7 +62,7 @@ update msg model =
                         log =
                             Debug.log "error" e
                     in
-                        ( model, Cmd.none )
+                    ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -74,20 +74,15 @@ relicView : Relic -> Html Msg
 relicView ({ era, name } as relic) =
     div []
         [ h3 [] [ text (toString era ++ " " ++ name) ]
-        , ul [] (dropViews relic)
+        , ul [] (itemViews relic.items)
         ]
 
 
-dropViews : Relic -> List (Html Msg)
-dropViews { c1, c2, c3, u1, u2, r } =
+itemViews : ItemCollection -> List (Html Msg)
+itemViews ( c1, c2, c3, u1, u2, r ) =
     List.map dropView [ c1, c2, c3, u1, u2, r ]
 
 
-dropView : Maybe Item -> Html Msg
-dropView item =
-    case item of
-        Nothing ->
-            li [] [ text "Item information could not be extracted, check your data" ]
-
-        Just ({ name } as i) ->
-            li [ onClick (ItemClicked i) ] [ text name ]
+dropView : Item -> Html Msg
+dropView ({ name } as item) =
+    li [ onClick (ItemClicked item) ] [ text name ]
