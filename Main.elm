@@ -2,16 +2,16 @@ module Main exposing (..)
 
 import Data exposing (..)
 import Html exposing (Html, div, h3, input, li, text, ul)
-import Html.Attributes exposing (style)
-import Html.Events exposing (onClick, onInput)
+import Html.Attributes exposing (style, type_)
+import Html.Events exposing (onCheck, onClick, onInput)
 import Http
-import String exposing (startsWith)
 
 
 type alias Model =
     { relics : List Relic
     , acquired : List Item
     , searchTerm : String
+    , showVaulted : Bool
     }
 
 
@@ -19,6 +19,7 @@ type Msg
     = RelicDataResponse (Result Http.Error (List Relic))
     | ItemClicked Item
     | SearchTermChanged String
+    | ShowVaultedChanged Bool
 
 
 main : Program Never Model Msg
@@ -36,6 +37,7 @@ model =
     { relics = []
     , acquired = []
     , searchTerm = ""
+    , showVaulted = False
     }
 
 
@@ -72,26 +74,51 @@ update msg model =
         SearchTermChanged searchTerm ->
             ( { model | searchTerm = searchTerm }, Cmd.none )
 
+        ShowVaultedChanged showVaulted ->
+            ( { model | showVaulted = showVaulted }, Cmd.none )
+
 
 view : Model -> Html Msg
-view { relics, searchTerm } =
+view { relics, searchTerm, showVaulted } =
     let
+        searchFilter =
+            List.filter (containsItemWith searchTerm)
+
+        vaultedFilter =
+            if showVaulted then
+                identity
+            else
+                List.filter (not << .vaulted)
+
         filteredRelics =
-            List.filter (containsItemWith searchTerm) relics
+            relics |> searchFilter |> vaultedFilter
 
         searchField =
             div []
-                [ text "Filter: "
+                [ text "Find Item: "
                 , input [ onInput SearchTermChanged ] [ text searchTerm ]
+                ]
+
+        toggleVaulted =
+            div []
+                [ input [ type_ "checkbox", onCheck ShowVaultedChanged ] []
+                , text "Show vaulted relics"
                 ]
 
         relicList =
             div [] (List.map relicView filteredRelics)
 
         relicView =
-            \{ era, name, items } ->
+            \{ era, name, items, vaulted } ->
+                let
+                    vaultedText =
+                        if vaulted then
+                            " (Vaulted)"
+                        else
+                            ""
+                in
                 div []
-                    [ h3 [] [ text (toString era ++ " " ++ name) ]
+                    [ h3 [] [ text (toString era ++ " " ++ name ++ vaultedText) ]
                     , ul [] (List.indexedMap itemView (toItemList items))
                     ]
 
@@ -122,10 +149,6 @@ view { relics, searchTerm } =
     in
     div []
         [ searchField
+        , toggleVaulted
         , relicList
         ]
-
-
-itemView : Item -> Html Msg
-itemView ({ name } as item) =
-    li [ onClick (ItemClicked item) ] [ text name ]

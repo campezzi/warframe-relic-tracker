@@ -42,6 +42,7 @@ type alias Relic =
     { era : Era
     , name : String
     , items : ItemCollection
+    , vaulted : Bool
     }
 
 
@@ -68,6 +69,16 @@ toItemList items =
             items
     in
     [ c1, c2, c3, u1, u2, r ]
+
+
+toItemCollection : List Item -> Maybe ItemCollection
+toItemCollection items =
+    case items of
+        [ c1, c2, c3, u1, u2, r ] ->
+            Just ( c1, c2, c3, u1, u2, r )
+
+        _ ->
+            Nothing
 
 
 fetchRelicData : (Result Http.Error (List Relic) -> msg) -> Cmd msg
@@ -121,19 +132,24 @@ mkRelic era name state rewards =
     case state of
         "Intact" ->
             let
-                items =
-                    List.sortWith rarityComparison rewards |> List.map .item |> toTuple
+                mEra =
+                    mkEra era
 
-                toTuple =
-                    \collection ->
-                        case collection of
-                            [ c1, c2, c3, u1, u2, r ] ->
-                                Just ( c1, c2, c3, u1, u2, r )
+                mName =
+                    Just name
 
-                            _ ->
-                                Nothing
+                mItems =
+                    List.sortWith rarityComparison rewards |> List.map .item |> toItemCollection
+
+                mVaulted =
+                    Maybe.map2 isVaulted mEra mName
             in
-            Maybe.map3 Relic (mkEra era) (Just name) items
+            Maybe.map4
+                Relic
+                mEra
+                mName
+                mItems
+                mVaulted
 
         _ ->
             Nothing
@@ -228,3 +244,98 @@ rarityComparison a b =
                         3
     in
     compare ra rb
+
+
+isVaulted : Era -> String -> Bool
+isVaulted era name =
+    let
+        vaultedRelics =
+            case era of
+                Lith ->
+                    [ "A1"
+                    , "B1"
+                    , "C1"
+                    , "F1"
+                    , "F2"
+                    , "G1"
+                    , "K1"
+                    , "M1"
+                    , "N1"
+                    , "N2"
+                    , "S1"
+                    , "S2"
+                    , "S3"
+                    , "S4"
+                    , "S5"
+                    , "S6"
+                    , "V1"
+                    ]
+
+                Meso ->
+                    [ "B1"
+                    , "C1"
+                    , "C2"
+                    , "D1"
+                    , "F1"
+                    , "F2"
+                    , "M1"
+                    , "N1"
+                    , "N2"
+                    , "N3"
+                    , "S1"
+                    , "S3"
+                    , "S4"
+                    , "V1"
+                    , "V2"
+                    , "V3"
+                    , "V4"
+                    ]
+
+                Neo ->
+                    [ "A1"
+                    , "B1"
+                    , "B3"
+                    , "D1"
+                    , "N1"
+                    , "N2"
+                    , "N3"
+                    , "N4"
+                    , "N5"
+                    , "N6"
+                    , "N7"
+                    , "S1"
+                    , "S2"
+                    , "S3"
+                    , "S5"
+                    , "S6"
+                    , "T1"
+                    , "V1"
+                    , "V3"
+                    , "V4"
+                    ]
+
+                Axi ->
+                    [ "A1"
+                    , "A2"
+                    , "B1"
+                    , "C1"
+                    , "C2"
+                    , "E1"
+                    , "G1"
+                    , "H1"
+                    , "H2"
+                    , "K1"
+                    , "N1"
+                    , "N2"
+                    , "N3"
+                    , "R1"
+                    , "S1"
+                    , "T1"
+                    , "V1"
+                    , "V2"
+                    , "V3"
+                    , "V4"
+                    , "V5"
+                    ]
+    in
+    List.member name vaultedRelics
