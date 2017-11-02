@@ -7,6 +7,7 @@ module Data
         , containsItemWith
         , fetchRelicData
         , itemStartsWith
+        , toItemList
         )
 
 import Http
@@ -51,20 +52,22 @@ type alias Reward =
 
 
 containsItemWith : String -> Relic -> Bool
-containsItemWith term relic =
-    let
-        ( c1, c2, c3, u1, u2, r ) =
-            relic.items
-
-        items =
-            [ c1, c2, c3, u1, u2, r ]
-    in
-    List.any (itemStartsWith term) items
+containsItemWith term { items } =
+    List.any (itemStartsWith term) (toItemList items)
 
 
 itemStartsWith : String -> Item -> Bool
 itemStartsWith term { name } =
     startsWith (toLower term) (toLower name)
+
+
+toItemList : ItemCollection -> List Item
+toItemList items =
+    let
+        ( c1, c2, c3, u1, u2, r ) =
+            items
+    in
+    [ c1, c2, c3, u1, u2, r ]
 
 
 fetchRelicData : (Result Http.Error (List Relic) -> msg) -> Cmd msg

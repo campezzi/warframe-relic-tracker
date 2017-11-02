@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Data exposing (..)
 import Html exposing (Html, div, h3, input, li, text, ul)
+import Html.Attributes exposing (style)
 import Html.Events exposing (onClick, onInput)
 import Http
 import String exposing (startsWith)
@@ -77,32 +78,52 @@ view { relics, searchTerm } =
     let
         filteredRelics =
             List.filter (containsItemWith searchTerm) relics
+
+        searchField =
+            div []
+                [ text "Filter: "
+                , input [ onInput SearchTermChanged ] [ text searchTerm ]
+                ]
+
+        relicList =
+            div [] (List.map relicView filteredRelics)
+
+        relicView =
+            \{ era, name, items } ->
+                div []
+                    [ h3 [] [ text (toString era ++ " " ++ name) ]
+                    , ul [] (List.indexedMap itemView (toItemList items))
+                    ]
+
+        itemView =
+            \index ({ name } as item) ->
+                let
+                    boldStyle =
+                        if searchTerm /= "" && itemStartsWith searchTerm item then
+                            [ ( "font-weight", "bold" ) ]
+                        else
+                            []
+
+                    color =
+                        if index <= 2 then
+                            "rgb(198,124,68)"
+                        else if index <= 4 then
+                            "rgb(147,144,145)"
+                        else
+                            "rgb(213,165,73)"
+
+                    colorStyle =
+                        [ ( "color", color ) ]
+
+                    styles =
+                        boldStyle ++ colorStyle
+                in
+                li [ onClick (ItemClicked item), style styles ] [ text name ]
     in
     div []
-        [ searchField searchTerm
-        , div [] (List.map relicView filteredRelics)
+        [ searchField
+        , relicList
         ]
-
-
-searchField : String -> Html Msg
-searchField searchTerm =
-    div []
-        [ text "Filter: "
-        , input [ onInput SearchTermChanged ] [ text searchTerm ]
-        ]
-
-
-relicView : Relic -> Html Msg
-relicView ({ era, name } as relic) =
-    div []
-        [ h3 [] [ text (toString era ++ " " ++ name) ]
-        , ul [] (itemViews relic.items)
-        ]
-
-
-itemViews : ItemCollection -> List (Html Msg)
-itemViews ( c1, c2, c3, u1, u2, r ) =
-    List.map itemView [ c1, c2, c3, u1, u2, r ]
 
 
 itemView : Item -> Html Msg
