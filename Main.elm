@@ -1,8 +1,8 @@
 module Main exposing (..)
 
 import Data exposing (..)
-import Html exposing (Html, div, h3, input, li, text, ul)
-import Html.Attributes exposing (style, type_)
+import Html exposing (Html, div, h3, input, label, li, text, ul)
+import Html.Attributes exposing (for, id, style, type_)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Http
 
@@ -101,8 +101,8 @@ view { relics, searchTerm, showVaulted } =
 
         toggleVaulted =
             div []
-                [ input [ type_ "checkbox", onCheck ShowVaultedChanged ] []
-                , text "Show vaulted relics"
+                [ input [ id "vaultedCheckbox", type_ "checkbox", onCheck ShowVaultedChanged ] []
+                , label [ for "vaultedCheckbox" ] [ text "Show vaulted relics" ]
                 ]
 
         relicList =
