@@ -4,12 +4,15 @@ module Data
         , Item
         , ItemCollection
         , Relic
+        , containsItemWith
         , fetchRelicData
+        , itemStartsWith
         )
 
 import Http
 import Json.Decode exposing (Decoder, float, list, map, string)
 import Json.Decode.Pipeline exposing (decode, required)
+import String exposing (startsWith, toLower)
 
 
 type Era
@@ -47,6 +50,23 @@ type alias Reward =
     }
 
 
+containsItemWith : String -> Relic -> Bool
+containsItemWith term relic =
+    let
+        ( c1, c2, c3, u1, u2, r ) =
+            relic.items
+
+        items =
+            [ c1, c2, c3, u1, u2, r ]
+    in
+    List.any (itemStartsWith term) items
+
+
+itemStartsWith : String -> Item -> Bool
+itemStartsWith term { name } =
+    startsWith (toLower term) (toLower name)
+
+
 fetchRelicData : (Result Http.Error (List Relic) -> msg) -> Cmd msg
 fetchRelicData msg =
     let
@@ -60,20 +80,21 @@ relicsDecoder : Decoder (List Relic)
 relicsDecoder =
     let
         onlyValid =
-            \relics ->
-                List.foldr
-                    (\r acc ->
-                        case r of
-                            Nothing ->
-                                acc
+            List.foldr
+                (\r acc ->
+                    case r of
+                        Nothing ->
+                            acc
 
-                            Just relic ->
-                                relic :: acc
-                    )
-                    []
-                    relics
+                        Just relic ->
+                            relic :: acc
+                )
+                []
+
+        sorted =
+            List.sortWith relicComparison
     in
-    decode onlyValid |> required "relics" (list relicDecoder)
+    decode (onlyValid >> sorted) |> required "relics" (list relicDecoder)
 
 
 relicDecoder : Decoder (Maybe Relic)
@@ -145,6 +166,41 @@ mkRarity dropChance =
 
         _ ->
             Common
+
+
+relicComparison : Relic -> Relic -> Order
+relicComparison a b =
+    let
+        ea =
+            toInt a.era
+
+        eb =
+            toInt b.era
+
+        toInt =
+            \era ->
+                case era of
+                    Lith ->
+                        1
+
+                    Meso ->
+                        2
+
+                    Neo ->
+                        3
+
+                    Axi ->
+                        4
+
+        eraComparison =
+            compare ea eb
+    in
+    case eraComparison of
+        EQ ->
+            compare a.name b.name
+
+        _ ->
+            eraComparison
 
 
 rarityComparison : Reward -> Reward -> Order
