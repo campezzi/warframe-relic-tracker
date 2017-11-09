@@ -4,6 +4,16 @@ This is a fun side project that brings together two things I enjoy doing in my f
 
 As of right now, this is still incomplete, but I'm slowly chipping away and adding features. Once it's completed, this project will be hosted somewhere so other players can use it too (even if they have no interest in programming).
 
+### Try it out
+
+Assuming you already have Elm, Node and Yarn installed:
+
+      $ elm package install
+      $ yarn install
+      $ yarn start
+
+This will start a develpment server on port 3000.
+
 ### Roadmap
 - [x] Fetch relic data
 - [x] Parse JSON
