@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "build": "webpack",
-    "client": "webpack-dev-server --port 3000"
+    "start": "webpack-dev-server --port 3000"
   },
   "dependencies": {
     "elm-webpack-loader": "^4.4.0",
