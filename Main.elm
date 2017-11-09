@@ -79,7 +79,7 @@ update msg model =
 
 
 view : Model -> Html Msg
-view { relics, searchTerm, showVaulted } =
+view { relics, searchTerm, showVaulted, acquired } =
     let
         searchFilter =
             List.filter (containsItemWith searchTerm)
@@ -144,8 +144,14 @@ view { relics, searchTerm, showVaulted } =
 
                     styles =
                         boldStyle ++ colorStyle
+
+                    itemText =
+                        if List.member item acquired then
+                            name ++ " ✔"
+                        else
+                            name
                 in
-                li [ onClick (ItemClicked item), style styles ] [ text name ]
+                li [ onClick (ItemClicked item), style styles ] [ text itemText ]
     in
     div []
         [ searchField
