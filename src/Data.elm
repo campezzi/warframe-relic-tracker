@@ -3,6 +3,7 @@ module Data
         ( Era
         , Item
         , ItemCollection
+        , ItemId
         , Relic
         , containsItemWith
         , fetchRelicData
@@ -23,8 +24,13 @@ type Era
     | Axi
 
 
+type alias ItemId =
+    String
+
+
 type alias Item =
-    { name : String
+    { itemId : ItemId
+    , name : String
     }
 
 
@@ -122,9 +128,19 @@ relicDecoder =
 
 rewardDecoder : Decoder Reward
 rewardDecoder =
-    decode Reward
-        |> required "itemName" (map Item string)
+    decode mkReward
+        |> required "_id" string
+        |> required "itemName" string
         |> required "chance" (map mkRarity float)
+
+
+mkReward : ItemId -> String -> Rarity -> Reward
+mkReward itemId itemName rarity =
+    let
+        item =
+            Item itemId itemName
+    in
+    Reward item rarity
 
 
 mkRelic : String -> String -> String -> List Reward -> Maybe Relic

@@ -1,31 +1,48 @@
 module Main exposing (..)
 
 import Data exposing (..)
-import Html exposing (Html, div, h3, input, label, li, text, ul)
+import Html exposing (Html, button, div, h3, input, label, li, text, ul)
 import Html.Attributes exposing (for, id, style, type_)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Http
+import Json.Decode as JD
+import Json.Encode as JE
+import Ports.LocalStorage as LocalStorage
 
 
 type alias Model =
     { relics : List Relic
-    , acquired : List Item
+    , acquired : List ItemId
     , searchTerm : String
     , showVaulted : Bool
     }
 
 
 type Msg
-    = RelicDataResponse (Result Http.Error (List Relic))
+    = AcquiredItemsLoaded ( LocalStorage.Key, LocalStorage.Value )
+    | RelicDataResponse (Result Http.Error (List Relic))
     | ItemClicked Item
     | SearchTermChanged String
     | ShowVaultedChanged Bool
+    | ClearAcquiredItems
+
+
+localStorageKey : String
+localStorageKey =
+    "acquiredItems"
 
 
 main : Program Never Model Msg
 main =
+    let
+        commands =
+            Cmd.batch
+                [ fetchRelicData RelicDataResponse
+                , LocalStorage.storageGetItem localStorageKey
+                ]
+    in
     Html.program
-        { init = ( model, fetchRelicData RelicDataResponse )
+        { init = ( model, commands )
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -43,21 +60,19 @@ model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    LocalStorage.storageGetItemResponse AcquiredItemsLoaded
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ItemClicked item ->
-            let
-                acquired_ =
-                    if List.member item model.acquired then
-                        List.filter (\i -> i /= item) model.acquired
-                    else
-                        item :: model.acquired
-            in
-            ( { model | acquired = acquired_ }, Cmd.none )
+        AcquiredItemsLoaded ( _, value ) ->
+            case JD.decodeValue (JD.list JD.string) value of
+                Ok loadedItems ->
+                    ( { model | acquired = loadedItems }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         RelicDataResponse result ->
             case result of
@@ -71,11 +86,28 @@ update msg model =
                     in
                     ( model, Cmd.none )
 
+        ItemClicked { itemId } ->
+            let
+                ( acquired_, cmd ) =
+                    if List.member itemId model.acquired then
+                        ( List.filter (\i -> i /= itemId) model.acquired
+                        , LocalStorage.storageRemoveFromSet ( localStorageKey, JE.string itemId )
+                        )
+                    else
+                        ( itemId :: model.acquired
+                        , LocalStorage.storagePushToSet ( localStorageKey, JE.string itemId )
+                        )
+            in
+            ( { model | acquired = acquired_ }, cmd )
+
         SearchTermChanged searchTerm ->
             ( { model | searchTerm = searchTerm }, Cmd.none )
 
         ShowVaultedChanged showVaulted ->
             ( { model | showVaulted = showVaulted }, Cmd.none )
+
+        ClearAcquiredItems ->
+            ( { model | acquired = [] }, LocalStorage.storageRemoveItem localStorageKey )
 
 
 view : Model -> Html Msg
@@ -123,7 +155,7 @@ view { relics, searchTerm, showVaulted, acquired } =
                     ]
 
         itemView =
-            \index ({ name } as item) ->
+            \index ({ name, itemId } as item) ->
                 let
                     boldStyle =
                         if searchTerm /= "" && itemStartsWith searchTerm item then
@@ -146,15 +178,19 @@ view { relics, searchTerm, showVaulted, acquired } =
                         boldStyle ++ colorStyle
 
                     itemText =
-                        if List.member item acquired then
+                        if List.member itemId acquired then
                             name ++ " ✔"
                         else
                             name
                 in
                 li [ onClick (ItemClicked item), style styles ] [ text itemText ]
+
+        clearAcquiredItemsButton =
+            button [ onClick ClearAcquiredItems ] [ text "Clear Acquired Items" ]
     in
     div []
         [ searchField
         , toggleVaulted
+        , clearAcquiredItemsButton
         , relicList
         ]

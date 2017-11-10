@@ -735,6 +735,10 @@ elliptic@^6.0.0:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.0"
 
+elm-local-storage-ports@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/elm-local-storage-ports/-/elm-local-storage-ports-0.2.1.tgz#dafce3c20c497dd96f50f6f9c2ff06b2eba29622"
+
 elm-webpack-loader@^4.4.0:
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/elm-webpack-loader/-/elm-webpack-loader-4.4.0.tgz#dd7a3b628b7abc4fac38e3045d3ab6e57187e9b6"

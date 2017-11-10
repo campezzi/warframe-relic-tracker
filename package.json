@@ -7,9 +7,10 @@
   "license": "MIT",
   "scripts": {
     "build": "webpack",
-    "start": "webpack-dev-server --port 3000"
+    "start": "webpack-dev-server --port 3333"
   },
   "dependencies": {
+    "elm-local-storage-ports": "^0.2.1",
     "elm-webpack-loader": "^4.4.0",
     "file-loader": "^1.1.5",
     "webpack": "^3.8.1",
