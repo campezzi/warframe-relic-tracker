@@ -21,7 +21,7 @@ This will start a develpment server on port 3000.
 - [x] Item search
 - [x] Toggle display of vaulted relics
 - [x] Mark items as acquired on click
-- [ ] Persist acquired items on local storage
+- [x] Persist acquired items on local storage
 - [ ] Make it look pretty
 - [ ] Deploy it somewhere
 - [ ] Automate deployments
