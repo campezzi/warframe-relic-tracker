@@ -12,7 +12,7 @@ Assuming you already have Elm, Node and Yarn installed:
       $ yarn install
       $ yarn start
 
-This will start a develpment server on port 3000.
+This will start a develpment server on port 3333.
 
 ### Roadmap
 - [x] Fetch relic data
