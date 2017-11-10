@@ -1,5 +1,6 @@
 'use strict';
 
+require('ace-css/css/ace.css');
 require('./index.html');
 
 var Elm = require('./Main.elm');

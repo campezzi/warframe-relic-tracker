@@ -10,9 +10,12 @@
     "start": "webpack-dev-server --port 3333"
   },
   "dependencies": {
+    "ace-css": "^1.1.0",
+    "css-loader": "^0.28.7",
     "elm-local-storage-ports": "^0.2.1",
     "elm-webpack-loader": "^4.4.0",
     "file-loader": "^1.1.5",
+    "style-loader": "^0.19.0",
     "webpack": "^3.8.1",
     "webpack-dev-server": "^2.9.4"
   }
