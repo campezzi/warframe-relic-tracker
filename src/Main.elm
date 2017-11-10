@@ -1,8 +1,8 @@
 module Main exposing (..)
 
 import Data exposing (..)
-import Html exposing (Html, button, div, h3, input, label, li, text, ul)
-import Html.Attributes exposing (for, id, style, type_)
+import Html exposing (Html, button, div, h1, h3, input, label, li, text, ul)
+import Html.Attributes exposing (class, for, id, style, type_)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Http
 import Json.Decode as JD
@@ -125,6 +125,9 @@ view { relics, searchTerm, showVaulted, acquired } =
         filteredRelics =
             relics |> searchFilter |> vaultedFilter
 
+        titleView =
+            h1 [ class "center" ] [ text "Warframe Relic Tracker" ]
+
         searchField =
             div []
                 [ text "Find Item: "
@@ -138,28 +141,28 @@ view { relics, searchTerm, showVaulted, acquired } =
                 ]
 
         relicList =
-            div [] (List.map relicView filteredRelics)
+            div [ class "flex flex-wrap justify-center" ] (List.map relicView filteredRelics)
 
         relicView =
             \{ era, name, items, vaulted } ->
                 let
-                    vaultedText =
+                    ( vaultedText, bgColor ) =
                         if vaulted then
-                            " (Vaulted)"
+                            ( " (Vaulted)", "gray" )
                         else
-                            ""
+                            ( "", "blue" )
                 in
-                div []
-                    [ h3 [] [ text (toString era ++ " " ++ name ++ vaultedText) ]
-                    , ul [] (List.indexedMap itemView (toItemList items))
+                div [ class "overflow-hidden border rounded relic-box" ]
+                    [ div [ class ("p2 bold white bg-" ++ bgColor) ] [ text (toString era ++ " " ++ name ++ vaultedText) ]
+                    , div [ class "p2" ] [ div [] (List.indexedMap itemView (toItemList items)) ]
                     ]
 
         itemView =
             \index ({ name, itemId } as item) ->
                 let
-                    boldStyle =
+                    searchMatchStyle =
                         if searchTerm /= "" && itemStartsWith searchTerm item then
-                            [ ( "font-weight", "bold" ) ]
+                            [ ( "background-color", "#EFEFEF" ) ]
                         else
                             []
 
@@ -175,7 +178,7 @@ view { relics, searchTerm, showVaulted, acquired } =
                         [ ( "color", color ) ]
 
                     styles =
-                        boldStyle ++ colorStyle
+                        searchMatchStyle ++ colorStyle
 
                     itemText =
                         if List.member itemId acquired then
@@ -183,13 +186,14 @@ view { relics, searchTerm, showVaulted, acquired } =
                         else
                             name
                 in
-                li [ onClick (ItemClicked item), style styles ] [ text itemText ]
+                div [ onClick (ItemClicked item), style styles ] [ text itemText ]
 
         clearAcquiredItemsButton =
             button [ onClick ClearAcquiredItems ] [ text "Clear Acquired Items" ]
     in
     div []
-        [ searchField
+        [ titleView
+        , searchField
         , toggleVaulted
         , clearAcquiredItemsButton
         , relicList

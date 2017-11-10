@@ -1,6 +1,6 @@
 module Data
     exposing
-        ( Era
+        ( Era(..)
         , Item
         , ItemCollection
         , ItemId
