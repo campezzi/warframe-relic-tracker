@@ -91,7 +91,7 @@ fetchRelicData : (Result Http.Error (List Relic) -> msg) -> Cmd msg
 fetchRelicData msg =
     let
         request =
-            Http.get "http://drops.warframestat.us/data/relics.json" relicsDecoder
+            Http.get "https://drops.warframestat.us/data/relics.json" relicsDecoder
     in
     Http.send msg request
 
